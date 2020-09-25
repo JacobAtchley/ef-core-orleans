@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Test.Platform.Wms.Orleans.Grains.Implementations;
 using Test.Platform.Wms.Sql.Contexts;
 using Test.Platform.Wms.Sql.Implementations;
 
@@ -22,7 +23,11 @@ namespace Test.Platform.Wms.Api
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Scan(scan => scan.FromAssemblyOf<ItemRepository>()
+            services.Scan(scan => scan.FromAssemblyOf<InventoryRepository>()
+                .AddClasses()
+                .AsImplementedInterfaces());
+            
+            services.Scan(scan => scan.FromAssemblyOf<InventoryGrain>()
                 .AddClasses()
                 .AsImplementedInterfaces());
                 

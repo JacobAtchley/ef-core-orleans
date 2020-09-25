@@ -7,3 +7,9 @@ Content-Type: application/json
 
 ###
 https://localhost:5001/api/v1/items/2a50aa6c-8fe8-4c7a-bb93-731f0bd637d3
+
+###
+POST https://localhost:5001/api/v1/inventory/increment/2a50aa6c-8fe8-4c7a-bb93-731f0bd637d3/25
+
+###
+POST https://localhost:5001/api/v1/inventory/decrement/2a50aa6c-8fe8-4c7a-bb93-731f0bd637d3/25

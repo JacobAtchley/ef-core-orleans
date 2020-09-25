@@ -1,4 +1,13 @@
-$HEADER$namespace $NAMESPACE$
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Test.Platform.Wms.Core.Models;
+
+namespace Test.Platform.Wms.Core.Interfaces
 {
-  public class $CLASS$ {$END$}
+    public interface IInventoryRepository : ICrudRepo<Inventory>
+    {
+        Task<List<Inventory>> GetByItemId(Guid itemId, CancellationToken cancellationToken);
+    }
 }

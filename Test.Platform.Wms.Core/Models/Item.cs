@@ -1,9 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Test.Platform.Wms.Core.Interfaces;
 
 namespace Test.Platform.Wms.Core.Models
 {
-    public class Item
+    public class Item : IEntity
     {
         [Key]
         public Guid Id { get; set; }

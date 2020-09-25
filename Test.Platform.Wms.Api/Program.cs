@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
+using Orleans.Hosting;
 using Test.Platform.Wms.Sql.Contexts;
 
 namespace Test.Platform.Wms.Api
@@ -52,6 +54,20 @@ namespace Test.Platform.Wms.Api
                         builder.AddUserSecrets("Test.Platform.Wms", true);
                     }
                 })
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .UseOrleans((context, siloBuilder) =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        siloBuilder.UseLocalhostClustering();
+                    }
+
+                    siloBuilder.Configure<ClusterOptions>(opt =>
+                    {
+                        opt.ClusterId = context.HostingEnvironment.IsDevelopment() ? "dev" : "prod";
+                        opt.ServiceId = "Test.Platform.Wms.Inventory";
+                    });
+
+                });
     }
 }

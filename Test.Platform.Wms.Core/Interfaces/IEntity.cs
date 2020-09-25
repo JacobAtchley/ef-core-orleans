@@ -1,4 +1,9 @@
-$HEADER$namespace $NAMESPACE$
+using System;
+
+namespace Test.Platform.Wms.Core.Interfaces
 {
-  public class $CLASS$ {$END$}
+    public interface IEntity
+    {
+        public Guid Id { get; set; }
+    }
 }

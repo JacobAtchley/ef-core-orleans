@@ -48,7 +48,7 @@ namespace Test.Platform.Wms.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _repo.CreateAsync(item.Id, item, cancellationToken);
+            await _repo.CreateAsync(item, cancellationToken);
 
             return CreatedAtRoute("GetItemById", new { item.Id }, item);
         }
