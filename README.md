@@ -17,6 +17,6 @@ https://github.com/reactiveui/refit
 
 
 Next Steps
-* implement persistence
-* implement Silo membership to sql server or azure table storage
+- [] implement persistence
+- [] implement Silo membership to sql server or azure table storage
   
