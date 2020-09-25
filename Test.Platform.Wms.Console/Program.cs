@@ -31,9 +31,8 @@ namespace Test.Platform.Wms.Console
 
             var tasks = Enumerable.Range(1, 10)
                 .Select(async x => {
-                    var newInventory = await client.DecrementInventoryAsync(pumpkinId, x, x);
-                    System.Console.WriteLine($"*************** {x} **************");
-                    //LogOperation(newInventory);
+                    var inv = await client.DecrementInventoryAsync(pumpkinId, x, x);
+                    System.Console.WriteLine($"*************** {x} Inventory Is now  {inv.Count} **************");
                 });
 
             await Task.WhenAll(tasks);

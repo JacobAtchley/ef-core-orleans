@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Test.Platform.Wms.Core.Interfaces;
 using Test.Platform.Wms.Core.Models;
 
@@ -11,16 +12,20 @@ namespace Test.Platform.Wms.Services
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IItemRepository _itemRepository;
+        private readonly ILogger _logger;
 
-        public InventoryIncrementService(IItemRepository itemRepository, IInventoryRepository inventoryRepository)
+        public InventoryIncrementService(IItemRepository itemRepository,
+            IInventoryRepository inventoryRepository,
+            ILogger<InventoryIncrementService> logger)
         {
             _itemRepository = itemRepository;
             _inventoryRepository = inventoryRepository;
+            _logger = logger;
         }
 
         public async Task<Inventory> IncrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
         {
-            Console.WriteLine($"Increment inventory index {index}");
+            _logger.LogDebug($"Increment inventory index {index}");
 
             var item = await _itemRepository.GetByKeyAsync(itemId, cancellationToken);
 

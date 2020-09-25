@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Test.Platform.Wms.Core.Interfaces;
 using Test.Platform.Wms.Core.Models;
 
@@ -11,16 +12,20 @@ namespace Test.Platform.Wms.Services
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IItemRepository _itemRepository;
+        private readonly ILogger _logger;
 
-        public InventoryDecrementService(IItemRepository itemRepository, IInventoryRepository inventoryRepository)
+        public InventoryDecrementService(IItemRepository itemRepository,
+            IInventoryRepository inventoryRepository,
+            ILogger<InventoryDecrementService> logger)
         {
             _itemRepository = itemRepository;
             _inventoryRepository = inventoryRepository;
+            _logger = logger;
         }
 
         public async Task<Inventory> DecrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
         {
-            Console.WriteLine($"Decrement inventory index {index} {DateTime.Now}");
+            _logger.LogDebug($"Decrement inventory index {index} {DateTime.Now}");
             
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
