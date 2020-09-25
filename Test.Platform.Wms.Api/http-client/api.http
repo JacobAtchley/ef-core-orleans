@@ -1,0 +1,9 @@
+https://localhost:5001/api/v1/items
+###
+POST https://localhost:5001/api/v1/items
+Content-Type: application/json
+
+< ./new-item.json
+
+###
+https://localhost:5001/api/v1/items/2a50aa6c-8fe8-4c7a-bb93-731f0bd637d3
