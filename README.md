@@ -16,3 +16,7 @@ https://github.com/khellang/Scrutor
 https://github.com/reactiveui/refit
 
 
+Next Steps
+* implement persistence
+* implement Silo membership to sql server or azure table storage
+  
