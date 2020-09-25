@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,20 +7,22 @@ using Test.Platform.Wms.Core.Models;
 
 namespace Test.Platform.Wms.Services
 {
-    public class InventoryIncrementService : IInventoryIncrementService
+    public class InventoryDecrementService : IInventoryDecrementService
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IItemRepository _itemRepository;
 
-        public InventoryIncrementService(IItemRepository itemRepository, IInventoryRepository inventoryRepository)
+        public InventoryDecrementService(IItemRepository itemRepository, IInventoryRepository inventoryRepository)
         {
             _itemRepository = itemRepository;
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task<Inventory> IncrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
+        public async Task<Inventory> DecrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
         {
-            Console.WriteLine($"Increment inventory index {index}");
+            Console.WriteLine($"Decrement inventory index {index} {DateTime.Now}");
+            
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
             var item = await _itemRepository.GetByKeyAsync(itemId, cancellationToken);
 
@@ -36,20 +38,17 @@ namespace Test.Platform.Wms.Services
 
             if (inventory == null)
             {
-                inventory = new Inventory
-                {
-                    Count = quantity,
-                    Id = Guid.NewGuid(),
-                    ItemId = itemId
-                };
-                
-                await _inventoryRepository.CreateAsync(inventory, cancellationToken);
+                throw new Exception("Could not decrement inventory that doesn't exist.");
             }
-            else
+
+            var count = inventory.Count -= quantity;
+
+            if (count < 0)
             {
-                inventory.Count += quantity;
-                await _inventoryRepository.UpdateAsync(inventory, cancellationToken);
+                throw new Exception("Could not decrement inventory. you would be negative.");
             }
+                
+            await _inventoryRepository.UpdateAsync(inventory, cancellationToken);
 
             return inventory;
         }

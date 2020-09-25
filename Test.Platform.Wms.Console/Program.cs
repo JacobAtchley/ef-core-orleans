@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Refit;
@@ -10,12 +11,32 @@ namespace Test.Platform.Wms.Console
     {
         static async Task Main(string[] args)
         {
-            var rest = RestService.For<IInventoryClient>("http://localhost:5000/api/v1/inventory");
+            System.Console.WriteLine("Starting....");
+
+            const string root = "http://localhost:5000/api/v1/inventory";
+
+            var grain = RestService.For<IInventoryClient>($"{root}/grain/");
+            var service = RestService.For<IInventoryClient>($"{root}/service/");
 
             var pumpkinId = Guid.Parse("2A50AA6C-8FE8-4C7A-BB93-731F0BD637D3");
+            await DecrementInventory(pumpkinId, grain);
+            await DecrementInventory(pumpkinId, service);
+        }
 
-            var currentInventory = await rest.IncrementInventoryAsync(pumpkinId, 1000);
+        static async Task DecrementInventory(Guid pumpkinId, IInventoryClient client)
+        {
+            var currentInventory = await client.IncrementInventoryAsync(pumpkinId, 1000, 0);
+            
             LogOperation(currentInventory);
+
+            var tasks = Enumerable.Range(1, 10)
+                .Select(async x => {
+                    var newInventory = await client.DecrementInventoryAsync(pumpkinId, x, x);
+                    System.Console.WriteLine($"*************** {x} **************");
+                    //LogOperation(newInventory);
+                });
+
+            await Task.WhenAll(tasks);
         }
 
         static void LogOperation(Inventory inventory)

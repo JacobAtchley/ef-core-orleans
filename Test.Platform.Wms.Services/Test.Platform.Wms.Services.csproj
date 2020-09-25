@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Test.Platform.Wms.Core\Test.Platform.Wms.Core.csproj" />
-      <ProjectReference Include="..\Test.Platform.Wms.Orleans.Grains\Test.Platform.Wms.Orleans.Grains.csproj" />
     </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Test.Platform.Wms.Orleans.Grains.Implementations;
+using Test.Platform.Wms.Services;
 using Test.Platform.Wms.Sql.Contexts;
 using Test.Platform.Wms.Sql.Implementations;
 
@@ -28,6 +29,10 @@ namespace Test.Platform.Wms.Api
                 .AsImplementedInterfaces());
             
             services.Scan(scan => scan.FromAssemblyOf<InventoryGrain>()
+                .AddClasses()
+                .AsImplementedInterfaces());
+            
+            services.Scan(scan => scan.FromAssemblyOf<InventoryIncrementService>()
                 .AddClasses()
                 .AsImplementedInterfaces());
                 
