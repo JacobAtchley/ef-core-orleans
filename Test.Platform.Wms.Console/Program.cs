@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -31,8 +32,11 @@ namespace Test.Platform.Wms.Console
 
             var tasks = Enumerable.Range(1, 10)
                 .Select(async x => {
+                    var sw = new Stopwatch();
+                    sw.Start();
                     var inv = await client.DecrementInventoryAsync(pumpkinId, x, x);
-                    System.Console.WriteLine($"*************** {x} Inventory Is now  {inv.Count} **************");
+                    sw.Stop();
+                    System.Console.WriteLine($"*************** Index: {x}. Inventory Count: {inv.Count}. Duration: {sw.Elapsed} **************");
                 });
 
             await Task.WhenAll(tasks);
