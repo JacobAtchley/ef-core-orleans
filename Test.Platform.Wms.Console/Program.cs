@@ -18,19 +18,40 @@ namespace Test.Platform.Wms.Console
 
             const string root = "http://localhost:5000/api/v1/inventory";
 
-            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/"), "Grain");
-            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/service/"), "Service");
-            await DecrementInventory(RestService.For<IInventoryClient>(
-                $"{root}/grain/persistence/"),
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/"),
+            //     "Grain",
+            //     1000,
+            //     true,
+            //     false);
+            //
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/"),
+            //     "Grain",
+            //     1000,
+            //     false,
+            //     false);
+            //
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/service/"),
+            //     "Service",
+            //     1000,
+            //     false,
+            //     false);
+            //
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/service/"),
+            //     "Service",
+            //     1000,
+            //     false,
+            //     true);
+
+            await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/persistence/"),
                 "Grain Persistence",
                 1000,
-                true,
+                false,
                 false);
             
             await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/persistence/"),
                 "Grain Persistence",
                 1000,
-                false,
+                true,
                 false);
         }
 
@@ -38,8 +59,7 @@ namespace Test.Platform.Wms.Console
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            System.Console.WriteLine($"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")} ~*~*~*~*~*~*~*~*");
-
+            
             for (var index = 0; index < StaticData.Items.Length; index++)
             {
                 var item = StaticData.Items[index];
@@ -47,7 +67,7 @@ namespace Test.Platform.Wms.Console
             }
 
             var items = Enumerable.Range(1, max)
-                .Select( x => StaticData.GetRandomItem())
+                .SelectMany(_ => StaticData.Items)
                 .ToArray();
             
             var durations = new List<TimeSpan>();
@@ -74,8 +94,18 @@ namespace Test.Platform.Wms.Console
             stopWatch.Stop();
             
             var avgDuration = TimeSpan.FromMilliseconds(durations.Average(x => x.TotalMilliseconds));
+            var slowestDuration = TimeSpan.FromMilliseconds(durations.Max(x => x.TotalMilliseconds));
+            var fastestDuration = TimeSpan.FromMilliseconds(durations.Min(x => x.TotalMilliseconds));
             
-            System.Console.WriteLine($"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")} Total Time {stopWatch.Elapsed} Avg Request Duration {avgDuration} ~*~*~*~*~*~*~*~*");
+            System.Console.WriteLine($@"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")}
+Total Time {stopWatch.Elapsed}
+Avg Request Duration {avgDuration}
+Slowest Duration {slowestDuration}
+Fastest Duration {fastestDuration}
+Total Request Sent {durations.Count}
+ ~*~*~*~*~*~*~*~*");
+            
+            System.Console.WriteLine(Environment.NewLine);
         }
 
         private static async Task<TimeSpan> DecrementInventoryApiCall(IInventoryClient client, Item item, int index, bool log)

@@ -70,6 +70,18 @@ namespace Test.Platform.Wms.Api
                         opt.ServiceId = "Test.Platform.Wms.Inventory";
                     });
 
+                    siloBuilder.Configure<SiloMessagingOptions>(opt =>
+                    {
+                        opt.ResponseTimeout = TimeSpan.FromMinutes(10);
+                        opt.ResponseTimeoutWithDebugger = TimeSpan.FromHours(1);
+                    });
+
+                    siloBuilder.Configure<ClientMessagingOptions>(opt =>
+                    {
+                        opt.ResponseTimeout = TimeSpan.FromMinutes(10);
+                        opt.ResponseTimeoutWithDebugger = TimeSpan.FromHours(1);
+                    });
+
                     siloBuilder.AddAzureBlobGrainStorage("inventoryStorage", opt => {
                         opt.ContainerName = "inventory";
                         opt.UseJson = true;
