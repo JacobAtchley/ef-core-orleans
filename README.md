@@ -13,10 +13,12 @@ https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 https://github.com/khellang/Scrutor
 
 <br />
+
 `Test.Platform.Wms.Console` contains a `Refit` client to simulate requests against the endpoints listed above. After running the console client you should observe that no matter the order of request that hit the Orleans grain endpoint it should only execute one at a time. This is the value in concurrency actor models. Only one instance of an actor for a given key can be invoked at a time. This handles distributed locking scenarios.
 https://github.com/reactiveui/refit
 
 <br />
+
 A `docker-compose.yml` is include to host sql server and azurite, a azure blob storage and table storage emulator.
 <br />
 https://github.com/Azure/Azurite
