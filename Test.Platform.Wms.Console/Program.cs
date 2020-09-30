@@ -18,10 +18,21 @@ namespace Test.Platform.Wms.Console
 
             var grain = RestService.For<IInventoryClient>($"{root}/grain/");
             var service = RestService.For<IInventoryClient>($"{root}/service/");
+            var grainPersistence = RestService.For<IInventoryClient>($"{root}/grain/persistence/");
 
             var pumpkinId = Guid.Parse("2A50AA6C-8FE8-4C7A-BB93-731F0BD637D3");
+            
+            System.Console.WriteLine("~*~*~*~*~*~* Grain ~*~*~*~*~*~*~*~*");
             await DecrementInventory(pumpkinId, grain);
+            System.Console.WriteLine(Environment.NewLine);
+            
+            System.Console.WriteLine("~*~*~*~*~*~* Grain Persistence ~*~*~*~*~*~*~*~*");
             await DecrementInventory(pumpkinId, service);
+            System.Console.WriteLine(Environment.NewLine);
+            
+            System.Console.WriteLine("~*~*~*~*~*~* Service EF  ~*~*~*~*~*~*~*~*");
+            await DecrementInventory(pumpkinId, grainPersistence);
+            System.Console.WriteLine(Environment.NewLine);
         }
 
         static async Task DecrementInventory(Guid pumpkinId, IInventoryClient client)

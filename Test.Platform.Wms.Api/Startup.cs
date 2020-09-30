@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Orleans.Hosting;
 using Test.Platform.Wms.Orleans.Grains.Implementations;
 using Test.Platform.Wms.Services;
 using Test.Platform.Wms.Sql.Contexts;
@@ -29,7 +30,9 @@ namespace Test.Platform.Wms.Api
                 .AsImplementedInterfaces());
             
             services.Scan(scan => scan.FromAssemblyOf<InventoryGrain>()
-                .AddClasses()
+                .AddClasses(
+                    //c => c.Where(x => x != typeof(InventoryPersistenceGrain))
+                )
                 .AsImplementedInterfaces());
             
             services.Scan(scan => scan.FromAssemblyOf<InventoryIncrementService>()

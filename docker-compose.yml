@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  azurite:
+    container_name: test-platform-wms-service-azurite
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    restart: always
+    ports:
+      - "10001:10001"
+      - "10000:10000"
+    networks:
+      - test-platform-wms-network
+      
+  mssql:
+    image: mcr.microsoft.com/mssql/server
+    container_name: test-platform-wms-service-mssql
+    restart: "unless-stopped"
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password0#@!
+      - MSSQL_PID=Developer
+    volumes:
+      - test-platform-wms-sql:/var/opt/mssql
+    networks:
+      - test-platform-wms-network
+
+volumes:
+    test-platform-wms-sql:
+      external: true
+    test-platform-wms-azurite:
+      external: true
+
+networks:
+  test-platform-wms-network:
+    driver: bridge

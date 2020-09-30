@@ -5,8 +5,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Test.Platform.Wms.Orleans.Grains.Implementations;
 using Test.Platform.Wms.Sql.Contexts;
 
 namespace Test.Platform.Wms.Api
@@ -66,6 +68,17 @@ namespace Test.Platform.Wms.Api
                     {
                         opt.ClusterId = context.HostingEnvironment.IsDevelopment() ? "dev" : "prod";
                         opt.ServiceId = "Test.Platform.Wms.Inventory";
+                    });
+
+                    siloBuilder.AddAzureBlobGrainStorage("inventoryStorage", opt => {
+                        opt.ContainerName = "inventory";
+                        opt.UseJson = true;
+                        opt.ConnectionString = context.Configuration.GetConnectionString("Blob");
+                    });
+
+                    siloBuilder.ConfigureApplicationParts(manager =>
+                    {
+                        manager.AddApplicationPart(typeof(InventoryGrain).Assembly).WithReferences();
                     });
 
                 });

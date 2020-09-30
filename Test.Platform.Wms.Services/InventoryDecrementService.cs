@@ -27,7 +27,7 @@ namespace Test.Platform.Wms.Services
         {
             _logger.LogDebug($"Decrement inventory index {index} {DateTime.Now}");
             
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            //await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
             var item = await _itemRepository.GetByKeyAsync(itemId, cancellationToken);
 
