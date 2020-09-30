@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Refit;
 using Test.Platform.Wms.Core.Models;
+using Test.Platform.Wms.Core.Data;
 
 namespace Test.Platform.Wms.Console
 {
@@ -16,41 +18,80 @@ namespace Test.Platform.Wms.Console
 
             const string root = "http://localhost:5000/api/v1/inventory";
 
-            var grain = RestService.For<IInventoryClient>($"{root}/grain/");
-            var service = RestService.For<IInventoryClient>($"{root}/service/");
-            var grainPersistence = RestService.For<IInventoryClient>($"{root}/grain/persistence/");
-
-            var pumpkinId = Guid.Parse("2A50AA6C-8FE8-4C7A-BB93-731F0BD637D3");
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/"), "Grain");
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/service/"), "Service");
+            await DecrementInventory(RestService.For<IInventoryClient>(
+                $"{root}/grain/persistence/"),
+                "Grain Persistence",
+                1000,
+                true,
+                false);
             
-            System.Console.WriteLine("~*~*~*~*~*~* Grain ~*~*~*~*~*~*~*~*");
-            await DecrementInventory(pumpkinId, grain);
-            System.Console.WriteLine(Environment.NewLine);
-            
-            System.Console.WriteLine("~*~*~*~*~*~* Grain Persistence ~*~*~*~*~*~*~*~*");
-            await DecrementInventory(pumpkinId, service);
-            System.Console.WriteLine(Environment.NewLine);
-            
-            System.Console.WriteLine("~*~*~*~*~*~* Service EF  ~*~*~*~*~*~*~*~*");
-            await DecrementInventory(pumpkinId, grainPersistence);
-            System.Console.WriteLine(Environment.NewLine);
+            await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/persistence/"),
+                "Grain Persistence",
+                1000,
+                false,
+                false);
         }
 
-        static async Task DecrementInventory(Guid pumpkinId, IInventoryClient client)
+        static async Task DecrementInventory(IInventoryClient client, string name, int max, bool doSynchronously, bool logEachRequest)
         {
-            var currentInventory = await client.IncrementInventoryAsync(pumpkinId, 1000, 0);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            System.Console.WriteLine($"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")} ~*~*~*~*~*~*~*~*");
+
+            for (var index = 0; index < StaticData.Items.Length; index++)
+            {
+                var item = StaticData.Items[index];
+                await client.IncrementInventoryAsync(item.Id, 1000, index);
+            }
+
+            var items = Enumerable.Range(1, max)
+                .Select( x => StaticData.GetRandomItem())
+                .ToArray();
             
-            LogOperation(currentInventory);
+            var durations = new List<TimeSpan>();
 
-            var tasks = Enumerable.Range(1, 10)
-                .Select(async x => {
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    var inv = await client.DecrementInventoryAsync(pumpkinId, x, x);
-                    sw.Stop();
-                    System.Console.WriteLine($"*************** Index: {x}. Inventory Count: {inv.Count}. Duration: {sw.Elapsed} **************");
-                });
+            if (doSynchronously)
+            {
+                for (var index = 0; index < items.Length; index++)
+                {
+                    var item = items[index];
+                    var duration = await DecrementInventoryApiCall(client, item, index, logEachRequest);
+                    durations.Add(duration);
+                }
+            }
+            else
+            {
+                var tasks = items
+                    .Select((item, index) => DecrementInventoryApiCall(client, item, index, logEachRequest))
+                    .ToArray();
+                
+                await Task.WhenAll(tasks);
+                durations.AddRange(tasks.Select(x => x.Result));
+            }
+            
+            stopWatch.Stop();
+            
+            var avgDuration = TimeSpan.FromMilliseconds(durations.Average(x => x.TotalMilliseconds));
+            
+            System.Console.WriteLine($"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")} Total Time {stopWatch.Elapsed} Avg Request Duration {avgDuration} ~*~*~*~*~*~*~*~*");
+        }
 
-            await Task.WhenAll(tasks);
+        private static async Task<TimeSpan> DecrementInventoryApiCall(IInventoryClient client, Item item, int index, bool log)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            var inv = await client.DecrementInventoryAsync(item.Id, 1, index);
+            sw.Stop();
+            
+            if (log)
+            {
+                System.Console.WriteLine(
+                    $"*************** Index: {index}. Duration: {sw.ElapsedMilliseconds} ms. Item: {inv.Item.Name}. Quantity {inv.Count} **************");
+            }
+
+            return sw.Elapsed;
         }
 
         static void LogOperation(Inventory inventory)

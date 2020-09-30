@@ -2,36 +2,39 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
-using Orleans.Providers;
+using Orleans.Runtime;
 using Test.Platform.Wms.Core.Interfaces;
 using Test.Platform.Wms.Core.Models;
 using Test.Platform.Wms.Orleans.Grains.Interfaces;
 
 namespace Test.Platform.Wms.Orleans.Grains.Implementations
 {
-    [StorageProvider(ProviderName = "inventoryStorage")]
-    public class InventoryPersistenceGrain : Grain<Inventory>, IInventoryPersistenceGrain
+    public class InventoryPersistenceGrain : Grain, IInventoryPersistenceGrain
     {
         private readonly IItemRepository _itemRepo;
+        private readonly IPersistentState<Inventory> _state;
 
         public InventoryPersistenceGrain(
-            IItemRepository itemRepo)
+            IItemRepository itemRepo,
+            [PersistentState("inventory", "inventoryStorage")]
+            IPersistentState<Inventory> state)
         {
             _itemRepo = itemRepo;
+            _state = state;
         }
 
         public async Task<Inventory> DecrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
         {
-            State.Count -= quantity;
-            await WriteStateAsync();
-            return State;
+            _state.State.Count -= quantity;
+            await _state.WriteStateAsync();
+            return _state.State;;
         }
 
         public async Task<Inventory> IncrementInventoryAsync(Guid itemId, decimal quantity, int index, CancellationToken cancellationToken)
         {
-            if(State != null && State.Id != default)
+            if(_state.RecordExists && _state.State != null && _state.State.Id != default)
             {
-                State.Count += quantity;
+                _state.State.Count += quantity;
             }
             else
             {
@@ -42,7 +45,7 @@ namespace Test.Platform.Wms.Orleans.Grains.Implementations
                     throw new Exception($"Could not find item with given key: {itemId}");
                 }
                 
-                State = new Inventory
+                _state.State = new Inventory
                 {
                     Id = Guid.NewGuid(),
                     Count = quantity,
@@ -51,9 +54,9 @@ namespace Test.Platform.Wms.Orleans.Grains.Implementations
                 };
             }
 
-            await WriteStateAsync();
+            await _state.WriteStateAsync();
             
-            return State;
+            return _state.State;
         }
     }
 }

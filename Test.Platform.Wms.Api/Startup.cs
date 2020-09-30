@@ -29,12 +29,6 @@ namespace Test.Platform.Wms.Api
                 .AddClasses()
                 .AsImplementedInterfaces());
             
-            services.Scan(scan => scan.FromAssemblyOf<InventoryGrain>()
-                .AddClasses(
-                    //c => c.Where(x => x != typeof(InventoryPersistenceGrain))
-                )
-                .AsImplementedInterfaces());
-            
             services.Scan(scan => scan.FromAssemblyOf<InventoryIncrementService>()
                 .AddClasses()
                 .AsImplementedInterfaces());
