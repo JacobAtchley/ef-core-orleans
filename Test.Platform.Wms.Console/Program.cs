@@ -48,11 +48,11 @@ namespace Test.Platform.Wms.Console
                 false,
                 false);
             
-            await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/persistence/"),
-                "Grain Persistence",
-                1000,
-                true,
-                false);
+            // await DecrementInventory(RestService.For<IInventoryClient>($"{root}/grain/persistence/"),
+            //     "Grain Persistence",
+            //     1000,
+            //     true,
+            //     false);
         }
 
         static async Task DecrementInventory(IInventoryClient client, string name, int max, bool doSynchronously, bool logEachRequest)
@@ -60,17 +60,20 @@ namespace Test.Platform.Wms.Console
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             
+            var inventoryCheck = new Dictionary<Guid, (decimal expected, decimal actual)>();
+            
             for (var index = 0; index < StaticData.Items.Length; index++)
             {
                 var item = StaticData.Items[index];
-                await client.IncrementInventoryAsync(item.Id, 1000, index);
+                var newInventory = await client.IncrementInventoryAsync(item.Id, 1000, index);
+                inventoryCheck.Add(newInventory.ItemId.Value, (newInventory.Count - max, 0));
             }
 
             var items = Enumerable.Range(1, max)
                 .SelectMany(_ => StaticData.Items)
                 .ToArray();
             
-            var durations = new List<TimeSpan>();
+            var durations = new List<(TimeSpan duration, Inventory inventory)>();
 
             if (doSynchronously)
             {
@@ -93,9 +96,9 @@ namespace Test.Platform.Wms.Console
             
             stopWatch.Stop();
             
-            var avgDuration = TimeSpan.FromMilliseconds(durations.Average(x => x.TotalMilliseconds));
-            var slowestDuration = TimeSpan.FromMilliseconds(durations.Max(x => x.TotalMilliseconds));
-            var fastestDuration = TimeSpan.FromMilliseconds(durations.Min(x => x.TotalMilliseconds));
+            var avgDuration = TimeSpan.FromMilliseconds(durations.Average(x => x.duration.TotalMilliseconds));
+            var slowestDuration = TimeSpan.FromMilliseconds(durations.Max(x => x.duration.TotalMilliseconds));
+            var fastestDuration = TimeSpan.FromMilliseconds(durations.Min(x => x.duration.TotalMilliseconds));
             
             System.Console.WriteLine($@"~*~*~*~*~*~* {name} {(doSynchronously ? "Sync" : "Async")}
 Total Time {stopWatch.Elapsed}
@@ -104,11 +107,37 @@ Slowest Duration {slowestDuration}
 Fastest Duration {fastestDuration}
 Total Request Sent {durations.Count}
  ~*~*~*~*~*~*~*~*");
-            
+
+            foreach (var item in StaticData.Items)
+            {
+                var inv = await client.IncrementInventoryAsync(item.Id, 0, 0);
+                var valueTuple = inventoryCheck[item.Id];
+                valueTuple.actual = inv.Count;
+                inventoryCheck[item.Id] = valueTuple;
+            }
+
+            System.Console.WriteLine(Environment.NewLine);
+
+            var invalidInventories = inventoryCheck
+                .Where(x => x.Value.actual != x.Value.expected)
+                .ToArray();
+
+            if (invalidInventories.Any())
+            {
+                foreach (var invalidInventory in invalidInventories)
+                {
+                    System.Console.WriteLine($"!!!! Inventory is incorrect for {invalidInventory.Key}");
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("No invalid inventories.");
+            }
+
             System.Console.WriteLine(Environment.NewLine);
         }
 
-        private static async Task<TimeSpan> DecrementInventoryApiCall(IInventoryClient client, Item item, int index, bool log)
+        private static async Task<(TimeSpan duration, Inventory inventory)> DecrementInventoryApiCall(IInventoryClient client, Item item, int index, bool log)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -121,7 +150,7 @@ Total Request Sent {durations.Count}
                     $"*************** Index: {index}. Duration: {sw.ElapsedMilliseconds} ms. Item: {inv.Item.Name}. Quantity {inv.Count} **************");
             }
 
-            return sw.Elapsed;
+            return (sw.Elapsed, inv);
         }
 
         static void LogOperation(Inventory inventory)
