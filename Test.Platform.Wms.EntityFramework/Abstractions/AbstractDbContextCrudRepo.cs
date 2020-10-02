@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Test.Platform.Wms.Core.Extensions;
 using Test.Platform.Wms.Core.Interfaces;
 
-namespace Test.Platform.Wms.Sql.Abstractions
+namespace Test.Platform.Wms.EntityFramework.Abstractions
 {
     public class AbstractDbContextCrudRepo<TEntity, TDbContext> : ICrudRepo<TEntity>
         where TDbContext : DbContext

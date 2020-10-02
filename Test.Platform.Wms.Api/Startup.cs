@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -5,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Orleans.Hosting;
-using Test.Platform.Wms.Orleans.Grains.Implementations;
+using Test.Platform.Wms.Cosmo.Contexts;
+using Test.Platform.Wms.Cosmo.Implementations;
 using Test.Platform.Wms.Services;
 using Test.Platform.Wms.Sql.Contexts;
 using Test.Platform.Wms.Sql.Implementations;
@@ -32,11 +33,21 @@ namespace Test.Platform.Wms.Api
             services.Scan(scan => scan.FromAssemblyOf<InventoryIncrementService>()
                 .AddClasses()
                 .AsImplementedInterfaces());
+
+            services.Scan(scan => scan.FromAssemblyOf<OrderRepository>()
+                .AddClasses()
+                .AsImplementedInterfaces());
                 
             services.AddControllers();
             
             services.AddDbContext<InventoryContext>(opt =>
                 opt.UseSqlServer(Configuration.GetConnectionString(nameof(InventoryContext))));
+
+            services.AddDbContext<OrderContext>(opt =>
+                opt.UseCosmos(
+                    Configuration["Cosmos:Endpoint"],
+                    Configuration["Cosmos:Key"],
+                    Configuration["Cosmos:Db"]));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

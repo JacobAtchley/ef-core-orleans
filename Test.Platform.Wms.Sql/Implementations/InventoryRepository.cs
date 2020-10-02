@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Test.Platform.Wms.Core.Interfaces;
 using Test.Platform.Wms.Core.Models;
-using Test.Platform.Wms.Sql.Abstractions;
+using Test.Platform.Wms.EntityFramework.Abstractions;
 using Test.Platform.Wms.Sql.Contexts;
 
 namespace Test.Platform.Wms.Sql.Implementations

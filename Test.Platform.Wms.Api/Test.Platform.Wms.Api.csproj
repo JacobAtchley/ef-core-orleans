@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Test.Platform.Wms.Core\Test.Platform.Wms.Core.csproj" />
+      <ProjectReference Include="..\Test.Platform.Wms.Cosmo\Test.Platform.Wms.Cosmo.csproj" />
       <ProjectReference Include="..\Test.Platform.Wms.Orleans.Grains\Test.Platform.Wms.Orleans.Grains.csproj" />
       <ProjectReference Include="..\Test.Platform.Wms.Services\Test.Platform.Wms.Services.csproj" />
       <ProjectReference Include="..\Test.Platform.Wms.Sql\Test.Platform.Wms.Sql.csproj" />
