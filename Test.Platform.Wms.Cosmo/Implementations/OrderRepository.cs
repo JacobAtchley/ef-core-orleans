@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Test.Platform.Wms.Core.Interfaces;
 using Test.Platform.Wms.Core.Models;
 using Test.Platform.Wms.Cosmo.Contexts;
@@ -13,20 +14,28 @@ namespace Test.Platform.Wms.Cosmo.Implementations
     public class OrderRepository :AbstractDbContextCrudRepo<Order, OrderContext>,  IOrderRepository
     {
         private readonly OrderContext _orderContext;
+        private readonly IConfiguration _configuration;
 
-        public OrderRepository(OrderContext orderContext) : base(orderContext)
+        public OrderRepository(OrderContext orderContext, IConfiguration configuration) : base(orderContext)
         {
             _orderContext = orderContext;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<Order>> GetOrdersWithNumberOfLines(int numberOfLines, CancellationToken cancellationToken)
         {
 
-            //this doesn't work with ef cosmos ;(
-            var list = await _orderContext
-                .Orders
+            var client = _orderContext.Database.GetCosmosClient();
+            var list = await client.GetContainer(_configuration["Cosmos:Db"], "Orders")
+                .GetItemLinqQueryable<Order>()
                 .Where(x => x.Lines.Count() > numberOfLines)
                 .ToListAsync(cancellationToken);
+            
+            //this doesn't work with ef cosmos ;(
+            // var list = await _orderContext
+            //     .Orders
+            //     .Where(x => x.Lines.Count() > numberOfLines)
+            //     .ToListAsync(cancellationToken);
 
             return list;
         }
